@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,6 +33,7 @@ func getTestParcel() Parcel {
 func TestAddGetDelete(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
+	require.NoError(t, err)
 	defer db.Close()
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -46,7 +48,7 @@ func TestAddGetDelete(t *testing.T) {
 	// получите только что добавленную посылку, убедитесь в отсутствии ошибки
 	// проверьте, что значения всех полей в полученном объекте совпадают со значениями полей в переменной parcel
 	storedParcel, err := store.Get(id)
-	require.NoError(t, err)
+	assert.Equal(t, nil, err)
 	parcel.Number = id
 	require.Equal(t, parcel, storedParcel)
 
@@ -84,7 +86,7 @@ func TestSetAddress(t *testing.T) {
 	// получите добавленную посылку и убедитесь, что адрес обновился
 	added, err := stored.Get(id)
 	require.NoError(t, err)
-	require.Equal(t, newAddress, added.Address)
+	assert.Equal(t, newAddress, added.Address)
 
 }
 
@@ -111,7 +113,7 @@ func TestSetStatus(t *testing.T) {
 	// получите добавленную посылку и убедитесь, что статус обновился
 	added, err := store.Get(id)
 	require.NoError(t, err)
-	require.Equal(t, ParcelStatusSent, added.Status)
+	assert.Equal(t, ParcelStatusSent, added.Status)
 }
 
 // TestGetByClient проверяет получение посылок по идентификатору клиента
@@ -154,7 +156,7 @@ func TestGetByClient(t *testing.T) {
 	// убедитесь в отсутствии ошибки
 	// убедитесь, что количество полученных посылок совпадает с количеством добавленных
 	require.NoError(t, err)
-	require.Len(t, storedParcels, len(parcels))
+	assert.Len(t, storedParcels, len(parcels))
 
 	// check
 	for _, parcel := range storedParcels {
@@ -162,8 +164,8 @@ func TestGetByClient(t *testing.T) {
 		// убедитесь, что все посылки из storedParcels есть в parcelMap
 		// убедитесь, что значения полей полученных посылок заполнены верно
 		expectedParcel, exists := parcelMap[parcel.Number]
-		require.True(t, exists)
-		require.Equal(t, expectedParcel, parcel)
+		assert.True(t, exists)
+		assert.Equal(t, expectedParcel, parcel)
 
 	}
 }
